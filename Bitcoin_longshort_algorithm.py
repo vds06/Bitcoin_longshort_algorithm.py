@@ -3,7 +3,7 @@ import datetime
 import time
 #import numpy
 
-
+#----------------------Bitcoin Price functions using Coindesk price API-----------------------
 
 def btcnow():
     btcnow = requests.get('https://api.coindesk.com/v1/bpi/currentprice.json')
@@ -37,11 +37,15 @@ def btcpricing (date1, date2):
     print(btctext)
     return(btctext)
 
-def volalgo(year, walletusd, vol, btcamt, walletbtc, currdate, currmonth, curryear):
-
-#----------------------Bitcoin Price function using Coindesk price API-----------------------
-
 #--------------------------------------------------------------------------------------------
+
+
+#----------------------Volatility Algorithhm used to trade the btc wallet--------------------
+
+
+def volalgo(year, walletusd, vol, btcamt, walletbtc, currdate, currmonth, curryear,portfoliovalue):
+
+    portfoliovalue = portfoliovalue
 
     def mean(a,b,c):
         mean = (a + b + c)/3
@@ -71,14 +75,11 @@ def volalgo(year, walletusd, vol, btcamt, walletbtc, currdate, currmonth, currye
         ttext= t[tstart:tend]
 
         fx1= float(stext)
-    #   (fx1)
         fx2= float(ttext)
-    #   print(fx2)
 
         fxdelta = fx2-fx1
         fxchangepct = (abs(fxdelta)/fx1)*100
         pct = str(fxchangepct)
-    #   print(  pct + " percent")
 
         return(pct)
 
@@ -93,10 +94,7 @@ def volalgo(year, walletusd, vol, btcamt, walletbtc, currdate, currmonth, currye
 
     for y in range (1,10):
 
-            year = year + 1
-
-
-
+            year = yearint + 1
             month = 0
             for month in range (0,11):
 
@@ -104,24 +102,20 @@ def volalgo(year, walletusd, vol, btcamt, walletbtc, currdate, currmonth, currye
                 date1 = 0
                 date2 = 1
                 for d in range (1,31):  #needs fixing only running upto the 28th of the month atm
-                    if (((date1 == currdate) & (month == currmonth) & (year == curryear))):
-                        break
-                    else:
-
-
-
-
+#                    if not(((date1 == currdate) & (month == currmonth) & (year == curryear))):
                         date1 = date1 + 1
                         date2 = date1 + 1
-    #                    datecutoff = date1
+
                         d = date1
-#                        print(datecutoff)
 
                         if (((date2 == 29) & (month == 2)) or (((date2 == 31) & ((month == 4) or (month == 6) or (month == 9) or (month == 11))))):
                             break
+                        elif ((date1 == currdate) & (month == currmonth) & (year == curryear)):
+                            return(portfoliovalue)
                         else:
                             date1txt = str(datetime.datetime(year, month, date1))
                             date2txt = str(datetime.datetime(year, month, date2))
+
 
                             # Truncation of date and time format
 
@@ -138,7 +132,7 @@ def volalgo(year, walletusd, vol, btcamt, walletbtc, currdate, currmonth, currye
                         btcprice = float(btcprice)
                         if meanpct > vol:  # if mean volatility is higher than the threshold then buy or else sell!
                             btcamt = walletusd / btcprice
-                            #           print("You are buying " +str(btcamt)+ " bitcoin")
+
                             walletusd = walletusd - btcprice * btcamt
                             walletbtc = walletbtc + btcamt
 
@@ -146,21 +140,20 @@ def volalgo(year, walletusd, vol, btcamt, walletbtc, currdate, currmonth, currye
                             btcamt = walletbtc
                             walletusd = btcprice * btcamt + walletusd
                             walletbtc = walletbtc - btcamt
-                            #               print("You are selling " +str(btcamt)+ " bitcoin")
-                            #           print("Your current balance is US$" + str(walletusd)+" with " + str(walletbtc) + " stored.")
-                            # total portfolio value
 
                         portfoliovalue = walletbtc * btcprice + walletusd
                         print("Your portfolio value is" + " " + str(portfoliovalue))
 
 
+#                    else:
+#                        return(portfoliovalue)
 
-    return (portfoliovalue)
+    return(portfoliovalue)
 
-#    label .end
+
 
 yearint = 2016 # year to begin backtesting from
-walletusd = 10000 # this is the inital value of the wallet
+walletusd = 1000000 # this is the inital value of the wallet
 vol = 0.09 # volatility threshold
 btcamt = 0 # number of bitcoin to buy
 walletbtc = 0
@@ -181,10 +174,11 @@ date = int(time.strftime("%d"))
 month = int(time.strftime("%m"))
 year = int(time.strftime("%Y"))
 
+pv = walletusd
 
-portfoliovalue = volalgo(yearint,walletusd,vol,btcamt,walletbtc,date,month,year)
+portfoliovalue = volalgo(yearint,walletusd,vol,btcamt,walletbtc,date,month,year,pv)
 
-Print('final portfolio value is US$ ' + str(portfoliovalue))
+print('final portfolio value is US$ ' + str(portfoliovalue))
 Activeperformance = (portfoliovalue*100 / walletusd)
 
-Print(Activeperformance)
+print(Activeperformance)
