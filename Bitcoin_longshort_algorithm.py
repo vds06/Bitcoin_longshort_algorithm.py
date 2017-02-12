@@ -105,9 +105,19 @@ def fxpricingdatabase(len, date1txt, curr): # len needs to be replaced with fxle
         result = pt.find(date1txtslash)
         if result == -1:
 
-            pttext='0'
+            #pttext='0'
             print ("shit we're fucked!")
+            print (date1txt)
 
+
+
+
+            # setup a recursive function
+#            pttext = fxpricingdatabase(len, recurrsivedate, curr)
+            # split function and reconcatenate date1text to subtract one from date till a result can be established from the loop
+
+            pttext = "null"
+#            break
 
         elif result != -1:
 
@@ -149,12 +159,12 @@ def fxpricingdatabase(len, date1txt, curr): # len needs to be replaced with fxle
                 print(pttext)
 
 
-            print(pttext + "this is currency fetched")
-
-
+                print(pttext + "this is currency fetched")
 
             break
-    return (pttext)
+
+
+    return(pttext)
 
 #--------------------------------------------------------------------------------------------
 
@@ -199,8 +209,30 @@ def volalgo(year, walletusd, vol, btcamt, walletbtc, currdate, currmonth, currye
             ttext= t[tstart:tend]
 
         else:
-            stext = fxpricingdatabase(len,date1, curr2)
-            ttext = fxpricingdatabase(len,date2, curr2)
+
+
+            stext = "null"
+            n=1
+            while stext is "null":
+
+                from datetime import datetime, timedelta
+
+
+                recurrsivedate = date1txt.replace("/", "-")
+                recurrsivedate = recurrsivedate[0:10]
+                recurrsivedate = str(datetime.strptime(recurrsivedate, "%Y-%m-%d" ) - timedelta(days=n))
+                recurrsivedate = recurrsivedate[0:10]
+                print(recurrsivedate)
+
+                stext = fxpricingdatabase(len, recurrsivedate, curr2)
+                ttext = fxpricingdatabase(len, recurrsivedate, curr2)
+                n = n+1
+
+
+
+
+
+
 
             print(stext)
             print(ttext)
@@ -235,14 +267,12 @@ def volalgo(year, walletusd, vol, btcamt, walletbtc, currdate, currmonth, currye
             for month in range (0,11):
 
                 month = month + 1
-                date1 = 1
-                date2 = 2
+                date1 = 0
+                date2 = 1
                 for d in range (1,31):  #needs fixing only running upto the 28th of the month atm
 #                    if not(((date1 == currdate) & (month == currmonth) & (year == curryear))):
-                        date1 = date1
-                        date2 = date1 + 1
-
-                        d = date1
+                        date1 = d
+                        date2 = d + 2
 
                         if (((date2 == 29) & (month == 2)) or (((date2 == 31) & ((month == 4) or (month == 6) or (month == 9) or (month == 11))))):
                             break
