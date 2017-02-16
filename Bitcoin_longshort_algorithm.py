@@ -3,6 +3,30 @@ import datetime
 import time
 #import numpy
 import csv
+import urllib, pprint
+import urllib.parse
+
+
+#Twitter sentiment analysis
+
+
+
+text = urllib.parse.quote("châteu", safe='')
+'ch%C3%A2teu'
+
+
+#from urllib import quote_plus
+
+#text = urllib.quote_plus("I'm a huge fan of Cowboy Bebop")
+url = "https://jamiembrown-tweet-sentiment-analysis.p.mashape.com/api/"
+r = requests.get(url, {"text": text})
+pprint.pprint(r.json())
+
+# {'sentiment': 'positive', 'score': 0.451951011074}
+
+#------------------------------------------------------------------------
+
+
 
 
 #----------------------Bitcoin Price functions using Coindesk price API-----------------------
@@ -38,8 +62,8 @@ with open('FXCSV2_4.csv') as csvfile:
 
 
 #    print(fxlen)
-    print(rates)
-    print(ratetestelement)
+#    print(rates)
+#    print(ratetestelement)
 
 def btcnow():
     btcnow = requests.get('https://api.coindesk.com/v1/bpi/currentprice.json')
@@ -101,13 +125,12 @@ def fxpricingdatabase(len, date1txt, curr): # len needs to be replaced with fxle
         pendtxt = "'"
         pt = ratetxt
         date1txtslash = date1txt.replace("-","/")
-        print(date1txtslash)
+#        print(date1txtslash)
         result = pt.find(date1txtslash)
         if result == -1:
 
             #pttext='0'
-            print ("shit we're fucked!")
-            print (date1txt)
+#            print (date1txt)
 
 
 
@@ -124,7 +147,7 @@ def fxpricingdatabase(len, date1txt, curr): # len needs to be replaced with fxle
             string = pt
             mylist = pt.split(',')
 
-            print(mylist)
+#            print(mylist)
 
             inr = str(mylist[6:7])
             cny = str(mylist[5:6])
@@ -136,7 +159,7 @@ def fxpricingdatabase(len, date1txt, curr): # len needs to be replaced with fxle
                 ptstart = pttext.find('"') + 1
                 ptend = pttext.find(pendtxt, ptstart)
                 pttext = pttext[ptstart:ptend]
-                print(pttext)
+ #               print(pttext)
 
 
 
@@ -146,7 +169,7 @@ def fxpricingdatabase(len, date1txt, curr): # len needs to be replaced with fxle
                 ptstart = pttext.find("'") + 1
                 ptend = pttext.find(pendtxt, ptstart)
                 pttext = pttext[ptstart:ptend]
-                print(pttext)
+ #               print(pttext)
 
 
 
@@ -156,10 +179,10 @@ def fxpricingdatabase(len, date1txt, curr): # len needs to be replaced with fxle
                 ptstart = pttext.find("'") + 1
                 ptend = pttext.find(pendtxt, ptstart)
                 pttext = pttext[ptstart:ptend]
-                print(pttext)
+ #               print(pttext)
 
 
-                print(pttext + "this is currency fetched")
+ #               print(pttext + "this is currency fetched")
 
             break
 
@@ -212,7 +235,9 @@ def volalgo(year, walletusd, vol, btcamt, walletbtc, currdate, currmonth, currye
 
 
             stext = "null"
-            n=1
+            ttext = "null"
+            recursivedateloppcnt1=1
+            recursivedateloppcnt2=1
             while stext is "null":
 
                 from datetime import datetime, timedelta
@@ -220,28 +245,32 @@ def volalgo(year, walletusd, vol, btcamt, walletbtc, currdate, currmonth, currye
 
                 recurrsivedate = date1txt.replace("/", "-")
                 recurrsivedate = recurrsivedate[0:10]
-                recurrsivedate = str(datetime.strptime(recurrsivedate, "%Y-%m-%d" ) - timedelta(days=n))
+                recurrsivedate = str(datetime.strptime(recurrsivedate, "%Y-%m-%d" ) - timedelta(days=recursivedateloppcnt1))
                 recurrsivedate = recurrsivedate[0:10]
-                print(recurrsivedate)
+#                print(recurrsivedate)
 
                 stext = fxpricingdatabase(len, recurrsivedate, curr2)
-                ttext = fxpricingdatabase(len, recurrsivedate, curr2)
-                n = n+1
 
+                recursivedateloppcnt1=recursivedateloppcnt1+1
 
+            while ttext is "null":
+                from datetime import datetime, timedelta
 
+                recurrsivedate2 = date2txt.replace("/", "-")
+                recurrsivedate2 = recurrsivedate2[0:10]
+                recurrsivedate2 = str(datetime.strptime(recurrsivedate2, "%Y-%m-%d") - timedelta(days=recursivedateloppcnt2))
+                recurrsivedate2 = recurrsivedate2[0:10]
+                ttext = fxpricingdatabase(len, recurrsivedate2, curr2)
+                recursivedateloppcnt2=recursivedateloppcnt2+1
 
-
-
-
-            print(stext)
-            print(ttext)
+#            print(stext)
+#            print(ttext)
 
         fx1= float(stext)
         fx2= float(ttext)
 
-        print(fx1)
-        print(fx2)
+#        print(fx1)
+#        print(fx2)
 
 
         fxdelta = fx2-fx1
@@ -259,12 +288,13 @@ def volalgo(year, walletusd, vol, btcamt, walletbtc, currdate, currmonth, currye
     #B = 'EUR'
     C = "CNY"
     D = "INR"
+    year = yearint
 
     for y in range (1,10):
 
-            year = yearint + 1
+            year = year + 1
             month = 0
-            for month in range (0,11):
+            for month in range (1,12):
 
                 month = month + 1
                 date1 = 0
@@ -272,7 +302,7 @@ def volalgo(year, walletusd, vol, btcamt, walletbtc, currdate, currmonth, currye
                 for d in range (1,31):  #needs fixing only running upto the 28th of the month atm
 #                    if not(((date1 == currdate) & (month == currmonth) & (year == curryear))):
                         date1 = d
-                        date2 = d + 2
+                        date2 = d + 1
 
                         if (((date2 == 29) & (month == 2)) or (((date2 == 31) & ((month == 4) or (month == 6) or (month == 9) or (month == 11))))):
                             break
@@ -307,7 +337,7 @@ def volalgo(year, walletusd, vol, btcamt, walletbtc, currdate, currmonth, currye
 #                        print(btcprice)
 
                         if btcprice == 0:
-                            print('No historical pricing for this date - using api processing will be slower')
+#                            print('No historical pricing for this date - using api processing will be slower')
                             btcprice = btcpricing(date1txt1, date2txt1)
                             btcprice = float(btcprice)
 
@@ -340,10 +370,10 @@ def volalgo(year, walletusd, vol, btcamt, walletbtc, currdate, currmonth, currye
 
     return(portfoliovalue)
 
-volincrement = 0.55
-vol = 0.01
+volincrement = 0.025
+vol = 0.25
 
-for v in range (1,9):
+for v in range (1,99):
 
     #yearint = 2011 # year to begin backtesting from
     #walletusd = 1000000 # this is the inital value of the wallet
