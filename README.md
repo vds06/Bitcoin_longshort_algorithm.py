@@ -5,10 +5,3 @@ kept as fallback options to utilising CSV files for back testing with data downl
 the speed of algorithm execution.
 
 
-
-#Potential work to be done -
-# Give a dynamic weighting to currencies
-# Use different signals to control the buy and sell mechanism
-# Find out the signals which are really affecting XBT (BTCUSD) price and plug them in
-# rerun the algo
-
