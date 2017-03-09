@@ -7,6 +7,23 @@ import urllib, pprint
 import urllib.parse
 
 
+#Potential work to be done -
+# Find out the maximum drawdown required - in conditions of leverage this will be required to work out what kind of margin calls might be needed
+
+# Give a dynamic weighting to currencies
+# Use different signals to control the buy and sell mechanism
+# Find out the signals which are really affecting XBT (BTCUSD) price and plug them in
+    # Volatility
+    # Number of news articles being produced by Newsfeeds
+    # Twitter
+    # Central bank press releases (especially PBOC - give higher wieghting)
+    # SNR! (how to separate? from any signal stream)
+    # Connect to margin trading platforms MagNr - Bitmex
+
+# Apply back propagation to all the factors above to intensify returns
+# rerun the algo
+
+
 #Twitter sentiment analysis
 
 
@@ -198,6 +215,7 @@ def fxpricingdatabase(len, date1txt, curr): # len needs to be replaced with fxle
 def volalgo(year, walletusd, vol, btcamt, walletbtc, currdate, currmonth, curryear,portfoliovalue,len):
 
     portfoliovalue = portfoliovalue
+    minportfoliovalue = portfoliovalue
 
 
     def mean(a,b,c):
@@ -295,7 +313,6 @@ def volalgo(year, walletusd, vol, btcamt, walletbtc, currdate, currmonth, currye
             year = year + 1
             month = 0
             for month in range (1,12):
-
                 month = month + 1
                 date1 = 0
                 date2 = 1
@@ -304,10 +321,17 @@ def volalgo(year, walletusd, vol, btcamt, walletbtc, currdate, currmonth, currye
                         date1 = d
                         date2 = d + 1
 
+
+                        if minportfoliovalue > portfoliovalue:
+                            minportfoliovalue = portfoliovalue
+#                            return (minportfoliovalue)
+
+
+
                         if (((date2 == 29) & (month == 2)) or (((date2 == 31) & ((month == 4) or (month == 6) or (month == 9) or (month == 11))))):
                             break
                         elif ((date1 == currdate) & (month == currmonth) & (year == curryear)):
-                            return(portfoliovalue)
+                            return(portfoliovalue,minportfoliovalue)
                         else:
 
                             date2txt = str(datetime.datetime(year, month, date2))
@@ -315,7 +339,7 @@ def volalgo(year, walletusd, vol, btcamt, walletbtc, currdate, currmonth, currye
                         if (((date1 == 29) & (month == 2)) or (((date1 == 31) & ((month == 4) or (month == 6) or (month == 9) or (month == 11))))):
                             break
                         elif ((date1 == currdate) & (month == currmonth) & (year == curryear)):
-                            return (portfoliovalue)
+                            return (portfoliovalue,minportfoliovalue)
                         else:
 
                             date1txt = str(datetime.datetime(year, month, date1))
@@ -341,7 +365,7 @@ def volalgo(year, walletusd, vol, btcamt, walletbtc, currdate, currmonth, currye
                             btcprice = btcpricing(date1txt1, date2txt1)
                             btcprice = float(btcprice)
 
-                            if meanpct > vol:  # if mean volatility is higher than the threshold then buy or else sell!
+                            if meanpct < vol:  # if mean volatility is lower than the threshold then buy or else sell! (Edit: this was reversed to produce better gains)
                                 btcamt = walletusd / btcprice
                                 walletusd = walletusd - btcprice * btcamt
                                 walletbtc = walletbtc + btcamt
@@ -363,15 +387,31 @@ def volalgo(year, walletusd, vol, btcamt, walletbtc, currdate, currmonth, currye
 
                         portfoliovalue = walletbtc * btcprice + walletusd
 #                        print("Your portfolio value is" + " " + str(portfoliovalue))
+#                        print (("Your minimum portfolio value is" + " " + str(minportfoliovalue)))
 
 
 #                    else:
 #                        return(portfoliovalue)
+#                        return(minportfoliovalue)
+                        returnvars  = [portfoliovalue,minportfoliovalue]
+#                        return(portfoliovalue,minportfoliovalue)
 
-    return(portfoliovalue)
 
-volincrement = 0.025
-vol = 0.25
+#                        print(returnvars)
+
+
+#                return(minportfoliovalue)
+
+    return (minportfoliovalue, portfoliovalue)
+
+
+
+#    return(portfoliovalue,minportfoliovalue)
+#    return (portfoliovalue, minportfoliovalue)
+
+
+volincrement = 0.001
+vol = 0.275
 
 for v in range (1,99):
 
@@ -379,7 +419,7 @@ for v in range (1,99):
     #walletusd = 1000000 # this is the inital value of the wallet
     vol = vol + volincrement # volatility threshold
     print(vol)
-    yearint = 2013 # year to begin backtesting from
+    yearint = 2015 # year to begin backtesting from
     walletusd = 1000000 # this is the inital value of the wallet
     btcamt = 0 # number of bitcoin to buy
     walletbtc = 0
@@ -399,12 +439,20 @@ for v in range (1,99):
 
     pv = walletusd
 
-    portfoliovalue = volalgo(yearint,walletusd,vol,btcamt,walletbtc,date,month,year,pv,len)
+    portfoliovalue = []
+    portfoliovalue = (volalgo(yearint,walletusd,vol,btcamt,walletbtc,date,month,year,pv,len))
 
+
+    print(portfoliovalue)
+#    minportfoliovalue = returnvars[:1]
+
+#    print (portfoliovalue['minportfoliovalue'])
     print('final portfolio value is US$ ' + str(portfoliovalue))
-    Activeperformance = ((portfoliovalue / walletusd) - 1)*100
+    Activeperformance = ((portfoliovalue[0] / walletusd) - 1)*100
 
     Activeperf = str(Activeperformance)
     Activeperf = Activeperf[:6]
 
-    print(str(Activeperf)+" percent")
+    drawdown = walletusd - portfoliovalue[1]
+
+    print(str(Activeperf)+" percent" + "with drawdown of " + str(drawdown))
